@@ -20,5 +20,5 @@ typedef double f64;
 
 typedef int b2;
 
-
+//Use for commits 
 //git add . && git commit -m "Update: fixed window resize issue" && git push
