@@ -103,19 +103,25 @@ void DrawCirc(Circ c){
 
 
 
-
 void Render() {
-    
     //black background
     Rect background = Convert_Rect(1, 0, 1, 0, 0x000000);
-    DrawRect(background);
     //white drawing box that will be on the left side of the screen
-    Rect drawbox = Convert_Rect(.9, .1 ,.7, .1, 0xFFFFFF);
+    Rect drawbox = Convert_Rect(.9, .1 ,.7, .025, 0xFFFFFF);
+    //Interactive Box
+    Rect userbox = Convert_Rect(.9, .1, .98,.75,0xD3D3D3);
+    
+    DrawRect(background);
     DrawRect(drawbox);
-    //Circles
-    Circ test = Convert_Circ(.5, .5, .25, .25, 0x0F00FF);
-    DrawCirc (test);
+    DrawRect(userbox);
     
     
+    if(mouse1Down && mousePos.y < drawbox.top && mousePos.y > drawbox.bottom && mousePos.x < drawbox.right && mousePos.x > drawbox.left){
+        Circ draw = {mousePos.x, mousePos.y, 5, 5, 0xFF1DCE};
+        DrawCirc(draw);
+    }
 }
+
+
+
 

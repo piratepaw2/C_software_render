@@ -7,10 +7,16 @@
 #define WIDTH 800
 #define HEIGHT 600
 
+
+int mouse1Down = 0;
+POINT mousePos;
+
 int bufferWidth = WIDTH;
 int bufferHeight = HEIGHT;
 #include "render.c"
 #include "paint.c"
+
+
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     switch (uMsg) {
@@ -20,6 +26,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             ResizeBuffer(width, height);
         } break;
         
+        case WM_LBUTTONDOWN: {
+            mouse1Down = 1;
+        } break;
+        
+        case WM_LBUTTONUP: {
+            mouse1Down = 0;
+        } break;
+        
+        
+        break;
         case WM_PAINT: {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hwnd, &ps);
@@ -41,6 +57,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
     
     return 0;
 }
+
+
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     const wchar_t CLASS_NAME[] = L"ScratchWindowClass";
@@ -84,6 +102,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+        
+        GetCursorPos(&mousePos);
+        ScreenToClient(hwnd, &mousePos);
+        
         
         Render();
         StretchDIBits(hdc, 0, 0, bufferWidth, bufferHeight, 0,
