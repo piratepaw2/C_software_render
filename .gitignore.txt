@@ -1,0 +1,16 @@
+# Build and object files
+*.exe
+*.o
+*.obj
+*.pdb
+*.dll
+
+# Debug and temp files
+*.log
+*.tmp
+*.bak
+*~
+
+# Editor/IDE folders
+.vscode/
+.idea/
