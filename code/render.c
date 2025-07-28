@@ -48,28 +48,73 @@ typedef struct{
     int color;
 }Rect;
 
-void Render() {
-    
-    Rect background = {bufferHeight, 0, bufferWidth, 0, 0x000000};
-    Rect drawbox = {.9 * bufferHeight, .1 * bufferHeight,.4 * bufferWidth, .1 * bufferWidth, 0xFFFFFF};
-    
-    
-    
-    
-    
-    //black background
-    for (int y = background.bottom; y < background.top; ++y) {
-        for (int x = background.left; x < background.right; ++x) {
-            pixelBuffer[y * bufferWidth + x] = background.color;
+Rect Convert_Rect(float top, float bottom, float right, float left, int color){
+    Rect r;
+    r.top = (int)(top * bufferHeight);
+    r.bottom = (int)(bottom * bufferHeight);
+    r.right = (int)(right * bufferWidth);
+    r.left = (int)(left * bufferWidth);
+    r.color = color;
+    return r;
+}
+
+void DrawRect(Rect r){
+    for (int y = r.bottom; y < r.top; ++y) {
+        for (int x = r.left; x < r.right; ++x) {
+            if (x >= 0 && x < bufferWidth && y >= 0 && y < bufferHeight) 
+                pixelBuffer[y * bufferWidth + x] = r.color;
         }
     } 
     
-    //white drawing box that will be on the left side of the screen
-    for (int y = drawbox.bottom; y < drawbox.top; ++y) {
-        for (int x = drawbox.left; x < drawbox.right; ++x) {
-            pixelBuffer[y * bufferWidth + x] = drawbox.color;
+}
+
+
+typedef struct{
+    int x;
+    int y;
+    int xrad;
+    int yrad;
+    int color;
+}Circ;
+
+Circ Convert_Circ(float x, float y, float xrad, float yrad, int color){
+    Circ c;
+    c.x = (int)(x * bufferWidth);
+    c.y = (int)(y * bufferHeight);
+    c.xrad = (int)(xrad * bufferWidth);
+    c.yrad = (int)(yrad * bufferHeight);
+    c.color = color;
+    return c;
+}
+
+void DrawCirc(Circ c){
+    for(int y = c.y - c.yrad; y < c.y + c.yrad; ++y){
+        for(int x = c.x - c.xrad; x < c.x + c.xrad; ++x){
+            float dx = (float)(x - c.x)/c.xrad;
+            float dy = (float)(y - c.y)/c.yrad;
+            if((dx * dx + dy * dy) <= 1.0f){
+                if(x >= 0 && x < bufferWidth && y >=0 && y < bufferHeight){
+                    pixelBuffer[y * bufferWidth + x] = c.color;
+                }
+            }
         }
     }
+}
+
+
+
+
+void Render() {
+    
+    //black background
+    Rect background = Convert_Rect(1, 0, 1, 0, 0x000000);
+    DrawRect(background);
+    //white drawing box that will be on the left side of the screen
+    Rect drawbox = Convert_Rect(.9, .1 ,.7, .1, 0xFFFFFF);
+    DrawRect(drawbox);
+    //Circles
+    Circ test = Convert_Circ(.5, .5, .25, .25, 0x0F00FF);
+    DrawCirc (test);
     
     
 }
