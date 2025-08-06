@@ -28,22 +28,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         
         case WM_LBUTTONDOWN: {
             mouse1Down = 1;
+            SetCapture(hwnd);
         } break;
         
         case WM_LBUTTONUP: {
             mouse1Down = 0;
+            ReleaseCapture();
         } break;
         
         
-        break;
         case WM_PAINT: {
             PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hwnd, &ps);
-            
-            Render();
-            StretchDIBits(hdc, 0, 0, bufferWidth, bufferHeight,
-                          0, 0, bufferWidth, bufferHeight,
-                          pixelBuffer, &bitmapInfo, DIB_RGB_COLORS, SRCCOPY);
+            BeginPaint(hwnd, &ps);
             EndPaint(hwnd, &ps);
         } break;
         
@@ -108,6 +104,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         
         
         Render();
+        
         StretchDIBits(hdc, 0, 0, bufferWidth, bufferHeight, 0,
                       0, bufferWidth, bufferHeight,
                       pixelBuffer,
