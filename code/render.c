@@ -5,6 +5,8 @@ uint32_t *canvasBuffer;
 
 BITMAPINFO bitmapInfo;
 
+#define BLANK 0xFFFFFF
+
 
 void ResizeBuffer(int width, int height) {
     if (pixelBuffer) {
@@ -24,7 +26,9 @@ void ResizeBuffer(int width, int height) {
     bitmapInfo.bmiHeader.biCompression = BI_RGB;
     
     canvasBuffer = malloc(sizeof(uint32_t) * bufferWidth * bufferHeight);
-    memset(canvasBuffer, 0, sizeof(uint32_t) * bufferWidth * bufferHeight);
+    for (int i = 0; i < bufferWidth * bufferHeight; i++) {
+        canvasBuffer[i] = BLANK;
+    }
 }
 
 /*
@@ -123,7 +127,9 @@ void DrawCircToBuffer(Circ c, uint32_t *targetBuffer) {
 
 void Render() {
     
-    
+    //Background
+    Rect background = Convert_Rect(1.0, 0.0, 1.0, 0.0, 0x000000);
+    DrawRect(background);
     //white drawing box that will be on the left side of the screen
     Rect drawbox = Convert_Rect(.9, .1 ,.7, .025, 0xFFFFFF);
     //Interactive Box
@@ -131,58 +137,74 @@ void Render() {
     //Circles for Different Colors
     Circ color_circles[12] = {
         Convert_Circ(0,0,.02,.02,0x000000),// Black
+        Convert_Circ(0,0,.02,.02,0xFFFFFF),// White
+        Convert_Circ(0,0,.02,.02,0x808080),// Grey
+        Convert_Circ(0,0,.02,.02,0xFF0000),// Red
         Convert_Circ(0,0,.02,.02,0x0000FF),// Blue
+        Convert_Circ(0,0,.02,.02,0xFFFF00),// Yellow
         Convert_Circ(0,0,.02,.02,0x006400),// Dark Green
         Convert_Circ(0,0,.02,.02,0x90EE90),// Light Green
-        Convert_Circ(0,0,.02,.02,0xFFFFFF),// White
-        Convert_Circ(0,0,.02,.02,0xFFFF00),// Yellow
-        Convert_Circ(0,0,.02,.02,0xFF0000),// Red
         Convert_Circ(0,0,.02,.02,0xFFA500),// Orange
         Convert_Circ(0,0,.02,.02,0x964B00),// Brown
-        Convert_Circ(0,0,.02,.02,0x808080),// Grey
         Convert_Circ(0,0,.02,.02,0xFFC0CB),// Pink
         Convert_Circ(0,0,.02,.02,0xA020f0),// Purple
     };
     
     int static init = 1;//draw background once
+    static int drawcolor = 0x000000; //black by default
+    
     if(init){
         //Copy Previous Drawing
-        memset(canvasBuffer, 0, sizeof(uint32_t) * bufferWidth * bufferHeight);
+        for (int y = drawbox.bottom; y < drawbox.top; y++) {
+            for (int x = drawbox.left; x < drawbox.right; x++) {
+                canvasBuffer[y * bufferWidth + x] = BLANK;
+            }
+        }
         init = 0;
     }
     
     //Drawing in the Drawbox
-    int drawcolor = 0xFF00FF;
     if(mouse1Down && mousePos.y < drawbox.top && mousePos.y > drawbox.bottom && mousePos.x < drawbox.right && mousePos.x > drawbox.left){
         Circ draw = {mousePos.x, mousePos.y, 5, 5, drawcolor};
         DrawCircToBuffer(draw, canvasBuffer);
-        
     }
     
-    memcpy(pixelBuffer,canvasBuffer, sizeof(uint32_t) * bufferWidth * bufferHeight);
     DrawRect(drawbox);
     DrawRect(userbox);
-    
-    //Draw the Circles
-    for(int y = 0; y<6; y++){
-        for(int x = 0; x < 2; x++){
-            if(x == 1)
-                color_circles[x+y*2].x = .667f * (userbox.right-userbox.left) + userbox.left;
-            else color_circles[x+y*2].x = .333f * (userbox.right-userbox.left) + userbox.left;
-            color_circles[x+y*2].y = (float)(y+1)/12.0f * (userbox.top-userbox.bottom) + userbox.bottom;
-            DrawCirc(color_circles[x+y*2]);
-        }
-    }
-    
     
     //User Drawing Buffer
     for (int y = 0; y < bufferHeight; ++y) {
         for (int x = 0; x < bufferWidth; ++x) {
-            if (canvasBuffer[y * bufferWidth + x] != 0) {
-                pixelBuffer[y * bufferWidth + x] = canvasBuffer[y * bufferWidth + x];
+            uint32_t color = canvasBuffer[y * bufferWidth + x];
+            if (color != BLANK) {
+                pixelBuffer[y * bufferWidth + x] = color;
             }
         }
     }
+    
+    
+    //Draw the Circles && Change Mouse Draw Color
+    for(int y = 0; y<6; y++){
+        for(int x = 0; x < 2; x++){
+            int index = x+y*2;
+            if(x == 1)
+                color_circles[index].x = .667f * (userbox.right-userbox.left) + userbox.left;
+            else color_circles[index].x = .333f * (userbox.right-userbox.left) + userbox.left;
+            color_circles[index].y = (float)(y+1)/12.0f * (userbox.top-userbox.bottom) + userbox.bottom;
+            
+            DrawCirc(color_circles[index]);
+            
+            if(mouse1Down){
+                int dx = mousePos.x - color_circles[index].x;
+                int dy = mousePos.y - color_circles[index].y;
+                if(dx * dx + dy * dy <= color_circles[index].xrad * color_circles[index].xrad)
+                    drawcolor = color_circles[index].color;
+            }
+        }
+    }
+    
+    
+    
 }
 
 
